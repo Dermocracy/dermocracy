@@ -1,6 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config');
 const translations = require('./lang');
+const db = require('./database');
 
 const bot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, { polling: true });
 
@@ -40,7 +41,7 @@ bot.on('callback_query', (query) => {
   }
 
   // Закрытие инлайн-клавиатуры
-  bot.answerCallbackQuery(query.id);
+  bot.answerCallbackQuery(query.id);	
 });
 
 bot.onText(/\/menu/, (msg, match) => {
@@ -208,4 +209,154 @@ bot.on('callback_query', (query) => {
 });
 
 // ... Остальной код ...
+// Регистрация кандидата
+async function registerCandidate(chatId, candidateId, program) {
+  const result = await db.query(
+    'INSERT INTO candidates (chat_id, user_id, program) VALUES ($1, $2, $3) ON CONFLICT (chat_id, user_id) DO UPDATE SET program = EXCLUDED.program',
+    [chatId, candidateId, program]
+  );
+  return result.rowCount > 0;
+}
+
+// Получение списка кандидатов
+async function getCandidates(chatId) {
+  const result = await db.query('SELECT * FROM candidates WHERE chat_id = $1', [chatId]);
+  return result.rows;
+}
+
+// Начать выборы
+async function startElection(chatId) {
+  const candidates = await getCandidates(chatId);
+  // Здесь можно начать процесс выборов, используя информацию о кандидатах
+}
+
+// Импичмент президента
+async function impeachPresident(chatId, presidentId) {
+  const result = await db.query(
+    'DELETE FROM presidents WHERE chat_id = $1 AND user_id = $2',
+    [chatId, presidentId]
+  );
+  return result.rowCount > 0;
+}
+
+// Получить результаты выборов
+async function getElectionResults(chatId) {
+  // Здесь можно получить результаты выборов
+}
+
+// Получить текущего президента
+async function getPresident(chatId) {
+  const result = await db.query('SELECT * FROM presidents WHERE chat_id = $1', [chatId]);
+  return result.rows[0];
+}
+const { getLang } = require('./lang');
+
+bot.onText(/\/register_candidate/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const candidateId = msg.from.id;
+  const program = match.input.split(' ').slice(1).join(' ');
+  const lang = await getLang(chatId);
+
+  try {
+    await registerCandidate(chatId, candidateId, program);
+    bot.sendMessage(chatId, lang.candidate_registration_success);
+  } catch (error) {
+    console.error(error);
+    bot.sendMessage(chatId, lang.candidate_registration_error);
+  }
+});
+
+bot.onText(/\/start_election/, async (msg) => {
+  const chatId = msg.chat.id;
+  const lang = await getLang(chatId);
+
+  try {
+    await startElection(chatId);
+    bot.sendMessage(chatId, lang.election_started);
+  } catch (error) {
+    console.error(error);
+    bot.sendMessage(chatId, lang.election_start_error);
+  }
+});
+bot.onText(/\/impeach_president/, async (msg) => {
+  const chatId = msg.chat.id;
+  const lang = await getLang(chatId);
+
+  try {
+    await startImpeachmentProcess(chatId);
+    bot.sendMessage(chatId, lang.president_impeachment_started);
+
+    const impeachmentResult = await conductImpeachmentVote(chatId);
+    if (impeachmentResult) {
+      bot.sendMessage(chatId, lang.president_impeachment_success);
+    } else {
+      bot.sendMessage(chatId, lang.president_impeachment_failure);
+    }
+  } catch (error) {
+    console.error(error);
+    bot.sendMessage(chatId, lang.president_impeachment_error);
+  }
+});
+async function startImpeachmentProcess(chatId, userId) {
+  const lang = await getLang(chatId);
+
+  if (!await isUserPresident(chatId, userId)) {
+    bot.sendMessage(chatId, lang.impeachment_not_allowed);
+    return;
+  }
+
+  const currentImpeachmentStatus = await getImpeachmentStatus(chatId);
+  if (currentImpeachmentStatus) {
+    bot.sendMessage(chatId, lang.impeachment_voting_ongoing);
+    return;
+  }
+
+  const endTime = new Date();
+  endTime.setHours(endTime.getHours() + 1); // Задаем время окончания голосования через 1 час
+  await startImpeachmentInDB(chatId, endTime);
+}
+
+async function conductImpeachmentVote(chatId) {
+  const currentImpeachmentStatus = await getImpeachmentStatus(chatId);
+  if (!currentImpeachmentStatus) {
+    return false;
+  }
+
+  // Здесь вы можете добавить
+  async function addImpeachmentVote(chatId, userId, vote) {
+    // Здесь вы можете добавить логику для сохранения голоса пользователя в базе данных.
+  }
+
+  async function getImpeachmentVoteResults(chatId) {
+    // Здесь вы можете добавить логику для получения результатов голосования по импичменту из базы данных.
+    // Верните объект с количеством голосов "за" и "против".
+  }
+
+  async function conductImpeachmentVote(chatId) {
+    const currentImpeachmentStatus = await getImpeachmentStatus(chatId);
+    if (!currentImpeachmentStatus) {
+      return false;
+    }
+
+    const now = new Date();
+    const endTime = new Date(currentImpeachmentStatus.endTime);
+    if (now >= endTime) {
+      const results = await getImpeachmentVoteResults(chatId);
+      const lang = await getLang(chatId);
+      const requiredVotes = Math.ceil(currentImpeachmentStatus.totalUsers * 0.5); // Требуется 50% голосов для импичмента
+
+      if (results.yes >= requiredVotes) {
+        bot.sendMessage(chatId, lang.impeachment_successful);
+        await updateImpeachmentStatusInDB(chatId, 'completed');
+        // Здесь вы можете добавить логику для смены президента
+      } else {
+        bot.sendMessage(chatId, lang.impeachment_failed);
+        await updateImpeachmentStatusInDB(chatId, 'completed');
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
 
