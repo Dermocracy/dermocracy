@@ -18,6 +18,16 @@ const translations = {
     yes: 'Yes',
     no: 'No',
 	statsText: 'Total chats: {totalChats}\nTotal users: {totalUsers}\nTotal votes: {totalVotes}',
+    candidate_registration_success: 'You have successfully registered as a candidate.',
+    candidate_registration_error: 'Error while registering candidate.',
+    election_started: 'Election has started.',
+    election_start_error: 'Error while starting the election.',
+    president_impeachment_started: 'Impeachment process has started.',
+    president_impeachment_error: 'Error while starting the impeachment process.',
+    president_impeachment_success: 'The president has been successfully impeached.',
+    president_impeachment_failure: 'The impeachment process has failed.',
+    impeachment_not_allowed: 'Only the president can initiate the impeachment process.',
+    impeachment_voting_ongoing: 'Impeachment voting is ongoing. Please wait for the results.',
 	  
   },
   ru: {
@@ -38,6 +48,17 @@ const translations = {
     yes: 'За',
     no: 'Против',
 	statsText: 'Всего чатов: {totalChats}\nВсего пользователей: {totalUsers}\nВсего голосов: {totalVotes}'
+    candidate_registration_success: 'Вы успешно зарегистрировались в качестве кандидата.',
+    candidate_registration_error: 'Ошибка при регистрации кандидата.',
+    election_started: 'Выборы начались.',
+    election_start_error: 'Ошибка при начале выборов.',
+    president_impeachment_started: 'Процесс импичмента начался.',
+    president_impeachment_error: 'Ошибка при начале процесса импичмента.',
+    president_impeachment_success: 'Президент успешно импичментирован.',
+    president_impeachment_failure: 'Процесс импичмента не удался.',
+    impeachment_not_allowed: 'Только президент может начать процесс импичмента.',
+    impeachment_voting_ongoing: 'Голосование по импичменту продолжается. Пожалуйста, дождитесь результатов.',
+   
   }
 };
 module.exports = translations;
