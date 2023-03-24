@@ -2,7 +2,7 @@ const TelegramBot = require("node-telegram-bot-api");
 const { TELEGRAM_BOT_TOKEN } = require("./config");
 const lang = require("./lang");
 const db = require('./db');
-const { pool, getUserByChatId, createUser, updateUser, deleteUser, setLang, query, getLang } = require('./db');
+const { setLang, getLang } = require('./db');
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
 bot.on("message", async (msg) => {
@@ -38,7 +38,6 @@ bot.on("callback_query", async (callbackQuery) => {
 
   if (langCode === "en" || langCode === "ru") {
     await setLang(chatId, langCode);
-    await createOrUpdateUser(chatId);
     const userLang = lang[langCode];
 
     bot.sendMessage(chatId, userLang.greetings);
@@ -54,13 +53,6 @@ bot.on("callback_query", async (callbackQuery) => {
     });
   }
 });
-async function createOrUpdateUser(chatId, lang) {
-  try {
-    await db.setLang(chatId, lang);
-  } catch (error) {
-    console.error("Error creating or updating user:", error);
-  }
-}
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
@@ -84,14 +76,5 @@ bot.onText(/\/start_election/, async (msg) => {
   const lang = await getLang(chatId);
   bot.sendMessage(chatId, lang.start_election);
 });
-async function getLang(chatId) {
-  try {
-    const result = await db.query('SELECT lang FROM users WHERE chat_id = $1', [chatId]);
-    return result.rows[0].lang;
-  } catch (error) {
-    console.error('Error getting language:', error);
-    return null;
-  }
-}
 
 console.log("Dermocracy Bot запущен и ожидает сообщений...");
