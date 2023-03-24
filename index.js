@@ -2,10 +2,11 @@ require('dotenv').config();
 const TelegramBot = require("node-telegram-bot-api");
 const lang = require("./lang");
 const db = require('./db');
-const { setLang, getLang, createOrUpdateUser} = require('./db');
+const { setLang, getLang, createOrUpdateUser, registerCandidateInDB } = require('./db');
 const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: true });
 
 // Helper functions
+
 function showLanguageSelection(chatId) {
   const options = {
     reply_markup: JSON.stringify({
@@ -51,8 +52,8 @@ async function registerCandidate(chatId, userLang) {
       return;
     }
 
-    // Регистрация кандидата (здесь нужно использовать функцию из файла db.js)
-    // Например: await registerCandidateInDB(chatId);
+    // Регистрация кандидата
+    await registerCandidateInDB(chatId);
 
     bot.sendMessage(chatId, userLang.registration_successful);
   } catch (error) {
@@ -60,6 +61,7 @@ async function registerCandidate(chatId, userLang) {
     bot.sendMessage(chatId, userLang.error_occurred);
   }
 }
+
 async function startElection(chatId, userLang) {
   try {
     const lang = await getLang(chatId);
@@ -113,27 +115,23 @@ async function voteForCandidate(chatId, candidateId) {
 }
 
 // Bot event handlers
-bot.on("message", async (msg) => {
-  const chatId = msg.chat.id;
-
+bot.on('message', async (msg) => {
   if (!msg.text) {
     return;
   }
-
-  try {
-    const user = await createOrUpdateUser(chatId);
-    const userLang = await getLang(chatId);
-
-    if (user.isNewUser) {
-      showLanguageSelection(chatId);
-    } else {
-      showActionsKeyboard(chatId, userLang);
+  
+  const chatId = msg.chat.id;
+  const userLang = await getLang(chatId);
+  
+  if (userLang) {
+    if (msg.text === userLang.register_candidate) {
+      await registerCandidate(chatId, userLang);
+    } else if (userLang.isNewUser) {
+      await handleNewUser(chatId, userLang);
     }
-  } catch (error) {
-    console.error(error);
-    bot.sendMessage(chatId, lang.en.error_occurred);
   }
 });
+
 
 bot.on("callback_query", async (callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
@@ -177,16 +175,25 @@ bot.onText(/\/vote (\d+)/, async (msg, match) => {
   voteForCandidate(chatId, candidateId);
 });
 
-bot.onText(/\/register_candidate/, async (msg) => {
+bot.on('message', async (msg) => {
+  if (!msg.text) {
+    return;
+  }
+  
   const chatId = msg.chat.id;
   const userLang = await getLang(chatId);
-  await registerCandidate(chatId, userLang);
+  
+  if (userLang && msg.text === userLang.register_candidate) {
+    await registerCandidate(chatId, userLang);
+  }
 });
 
 bot.onText(/\/view_candidates/, async (msg) => {
   const chatId = msg.chat.id;
-  showCandidateList(chatId);
+  const userLang = await getLang(chatId);
+  await showCandidateList(chatId, userLang);
 });
+
 
 bot.onText(/\/vote_for_candidate/, async (msg) => {
   const chatId = msg.chat.id;
