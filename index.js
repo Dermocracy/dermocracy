@@ -5,6 +5,8 @@ const db = require('./db');
 const { setLang, getLang } = require('./db');
 const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: true });
 
+const { createOrUpdateUser } = require('./db');
+
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
 
@@ -12,6 +14,9 @@ bot.on("message", async (msg) => {
     return;
   }
 
+  // Создаем или обновляем пользователя перед получением языка
+
+  await createOrUpdateUser(chatId, null);
   const userLang = await getLang(chatId);
 
   if (userLang === null) {
