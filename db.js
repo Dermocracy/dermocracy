@@ -7,12 +7,10 @@ const pool = new Pool({
   },
 });
 
-module.exports = {
-  query: (text, params) => pool.query(text, params),
-};
+module.exports.query = (text, params) => pool.query(text, params);
 
 // добавьте это в db.js
-async function setLang(chatId, lang) {
+module.exports.setLang = async (chatId, lang) => {
   const query = {
     text: 'UPDATE users SET lang = $1 WHERE chat_id = $2',
     values: [lang, chatId],
@@ -23,7 +21,8 @@ async function setLang(chatId, lang) {
     console.error('Error setting language:', error);
   }
 }
-async function getLang(chatId) {
+
+module.exports.getLang = async (chatId) => {
   const query = {
     text: 'SELECT lang FROM users WHERE chat_id = $1',
     values: [chatId],
@@ -36,11 +35,3 @@ async function getLang(chatId) {
     return null;
   }
 }
-
-
-// добавьте это в конец db.js
-module.exports = {
-  pool,
-  setLang,
-  getLang,
-};
