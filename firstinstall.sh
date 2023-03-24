@@ -63,10 +63,7 @@ read BOT_TOKEN
 # Создание .env файла с токеном бота и учетными данными базы данных
 cat > .env << EOF
 TELEGRAM_TOKEN=$BOT_TOKEN
-DB_HOST=localhost
-DB_USER=$NEW_PG_USER
-DB_PASSWORD=$NEW_PG_PASSWORD
-DB_NAME=dermocracy
+DATABASE_URL=postgres://$NEW_PG_USER:$NEW_PG_PASSWORD@localhost/dermocracy
 EOF
 
 echo "Установка завершена. Вы можете запустить вашего бота командой 'node index.js' в папке 'dermocracy'."
