@@ -9,7 +9,7 @@ const {
   removeCandidate,
 } = require('./lang');
 
-const token = process.env.BOT_TOKEN;
+const { token } = require('./config');
 const bot = new TelegramBot(token, { polling: true });
 
 console.log('Dermocracy Bot запущен и ожидает сообщений...');
