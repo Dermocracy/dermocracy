@@ -30,12 +30,13 @@ async function getLang(chatId) {
   };
   try {
     const result = await pool.query(query);
-    return result.rows[0] ? result.rows[0].lang : null;
+    return result.rows[0].lang;
   } catch (error) {
     console.error('Error getting language:', error);
     return null;
   }
 }
+
 
 // добавьте это в конец db.js
 module.exports = {
