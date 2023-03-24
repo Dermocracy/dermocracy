@@ -1,90 +1,81 @@
-const TelegramBot = require('node-telegram-bot-api');
-const { pool } = require('./database');
-const {
-  setLanguage,
-  getLang,
-  startElection,
-  getCandidates,
-  addCandidate,
-  removeCandidate,
-} = require('./lang');
+const TelegramBot = require("node-telegram-bot-api");
+const { TELEGRAM_BOT_TOKEN } = require("./config");
+const { getLang, setLang, createOrUpdateUser } = require("./database");
+const lang = require("./lang");
 
-const { token } = require('./config');
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
-console.log('Dermocracy Bot запущен и ожидает сообщений...');
-
-bot.on('message', async (msg) => {
+bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
-  const lang = await getLang(chatId);
 
-  if (msg.text.toString().toLowerCase() === '/start') {
-    bot.sendMessage(chatId, lang.greetings, {
-      reply_markup: {
-        keyboard: lang.languages_keyboard,
-        one_time_keyboard: true,
-      },
+  if (!msg.text) {
+    return;
+  }
+
+  const userLang = await getLang(chatId);
+
+  if (userLang === null) {
+    showLanguageSelection(chatId);
+  }
+});
+
+function showLanguageSelection(chatId) {
+  const options = {
+    reply_markup: JSON.stringify({
+      inline_keyboard: [
+        [{ text: "English 🇺🇸", callback_data: "en" }],
+        [{ text: "Русский 🇷🇺", callback_data: "ru" }],
+      ],
+    }),
+  };
+
+  bot.sendMessage(chatId, "Please choose your language / Пожалуйста, выберите ваш язык", options);
+}
+
+bot.on("callback_query", async (callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  const langCode = callbackQuery.data;
+
+  if (langCode === "en" || langCode === "ru") {
+    await setLang(chatId, langCode);
+    await createOrUpdateUser(chatId);
+    const userLang = lang[langCode];
+
+    bot.sendMessage(chatId, userLang.greetings);
+    bot.sendMessage(chatId, userLang.choose_action, {
+      reply_markup: JSON.stringify({
+        keyboard: [
+          [{ text: userLang.vote_for_president }],
+          [{ text: userLang.impeach_president }],
+          [{ text: userLang.start_election }],
+        ],
+        resize_keyboard: true,
+      }),
     });
   }
 });
 
-bot.onText(/\/set_language_(\w+)/, async (msg, match) => {
+bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
-  const language = match[1];
-  await setLanguage(chatId, language);
-  const lang = await getLang(chatId);
-  bot.sendMessage(chatId, lang.language_set);
+  showLanguageSelection(chatId);
 });
 
-bot.onText(/\/start_election/, async (msg) => {
+bot.onText(/\/vote_for_president/, async (msg) => {
   const chatId = msg.chat.id;
   const lang = await getLang(chatId);
-
-  try {
-    await startElection(chatId);
-    bot.sendMessage(chatId, lang.election_started);
-  } catch (error) {
-    console.error(error);
-    bot.sendMessage(chatId, lang.election_start_error);
-  }
-});
-
-bot.onText(/\/add_candidate (.+)/, async (msg, match) => {
-  const chatId = msg.chat.id;
-  const candidateName = match[1];
-  const lang = await getLang(chatId);
-
-  try {
-    await addCandidate(chatId, candidateName);
-    bot.sendMessage(chatId, lang.candidate_added(candidateName));
-  } catch (error) {
-    console.error(error);
-    bot.sendMessage(chatId, lang.candidate_add_error);
-  }
-});
-
-bot.onText(/\/remove_candidate (.+)/, async (msg, match) => {
-  const chatId = msg.chat.id;
-  const candidateName = match[1];
-  const lang = await getLang(chatId);
-
-  try {
-    await removeCandidate(chatId, candidateName);
-    bot.sendMessage(chatId, lang.candidate_removed(candidateName));
-  } catch (error) {
-    console.error(error);
-    bot.sendMessage(chatId, lang.candidate_remove_error);
-  }
+  bot.sendMessage(chatId, lang.vote_for_president);
 });
 
 bot.onText(/\/impeach_president/, async (msg) => {
   const chatId = msg.chat.id;
   const lang = await getLang(chatId);
-
-  try {
-    // здесь можно начать процесс импичмента
-  } catch (error) {
-    console.error(error);
-    bot.sendMessage(chatId, lang.impeachment_error);
-  }
+  bot.sendMessage(chatId, lang.impeach_president);
 });
+
+bot.onText(/\/start_election/, async (msg) => {
+  const chatId = msg.chat.id;
+  const lang = await getLang(chatId);
+  bot.sendMessage(chatId, lang.start_election);
+});
+
+console.log("Dermocracy Bot запущен и ожидает сообщений...");
