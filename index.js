@@ -1,6 +1,5 @@
 const TelegramBot = require("node-telegram-bot-api");
 const { TELEGRAM_BOT_TOKEN } = require("./config");
-const { getLang, setLang, createOrUpdateUser } = require("./database");
 const lang = require("./lang");
 // index.js
 const { pool, getUsers, getUserByChatId, createUser, updateUser, deleteUser, setLang } = require('./db');
