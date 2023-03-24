@@ -35,3 +35,12 @@ module.exports.getLang = async (chatId) => {
     return null;
   }
 }
+module.exports.createOrUpdateUser = async (chatId, lang) => {
+  const query = {
+    text: 'INSERT INTO users (chat_id, lang) VALUES ($1, $2) ON CONFLICT (chat_id) DO UPDATE SET lang = $2',
+    values: [chatId, lang],
+  };
+  try {
+    await pool.query(query);
+  } catch (error) {
+    console.error('Error creating or updating user:',
