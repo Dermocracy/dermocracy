@@ -23,9 +23,23 @@ async function setLang(chatId, lang) {
     console.error('Error setting language:', error);
   }
 }
+async function getLang(chatId) {
+  const query = {
+    text: 'SELECT lang FROM users WHERE chat_id = $1',
+    values: [chatId],
+  };
+  try {
+    const result = await pool.query(query);
+    return result.rows[0] ? result.rows[0].lang : null;
+  } catch (error) {
+    console.error('Error getting language:', error);
+    return null;
+  }
+}
 
 // добавьте это в конец db.js
 module.exports = {
   pool,
-  setLang, // добавьте эту строку
+  setLang,
+  getLang,
 };
