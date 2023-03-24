@@ -11,23 +11,6 @@ module.exports = {
   query: (text, params) => pool.query(text, params),
 };
 
-async function isUserPresident(chatId, userId) {
-  // Здесь вы можете добавить логику для проверки, является ли пользователь президентом чата.
-  // Верните true, если пользователь является президентом, и false в противном случае.
-}
-
-async function getImpeachmentStatus(chatId) {
-  // Здесь вы можете добавить логику для получения статуса импичмента для чата.
-  // Верните объект с информацией о статусе импичмента или null, если нет активного процесса импичмента.
-}
-
-async function startImpeachmentInDB(chatId, endTime) {
-  // Здесь вы можете добавить логику для установки статуса импичмента в базе данных.
-}
-
-async function updateImpeachmentStatusInDB(chatId, status) {
-  // Здесь вы можете добавить логику для обновления статуса импичмента в базе данных.
-}
 // добавьте это в db.js
 async function setLang(chatId, lang) {
   const query = {
@@ -40,12 +23,9 @@ async function setLang(chatId, lang) {
     console.error('Error setting language:', error);
   }
 }
+
 // добавьте это в конец db.js
 module.exports = {
   pool,
-  getUserByChatId,
-  createUser,
-  updateUser,
-  deleteUser,
   setLang, // добавьте эту строку
 };
