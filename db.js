@@ -6,9 +6,68 @@ const pool = new Pool({
     rejectUnauthorized: false,
   },
 });
+(async () => {
+  await createUsersTable();
+  await createCandidatesTable();
+  await createVotesTable();
+})();
 
 // Функция для выполнения SQL-запросов
 module.exports.query = (text, params) => pool.query(text, params);
+// Функция для создания таблицы users, если она не существует
+async function createUsersTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS users (
+      chat_id BIGINT PRIMARY KEY,
+      lang VARCHAR(2) NOT NULL,
+      is_new_user BOOLEAN DEFAULT TRUE
+    )
+  `;
+
+  try {
+    await pool.query(query);
+    console.log('Таблица users успешно создана или уже существует');
+  } catch (error) {
+    console.error('Ошибка при создании таблицы users:', error);
+  }
+}
+
+// Функция для создания таблицы candidates, если она не существует
+async function createCandidatesTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS candidates (
+      chat_id BIGINT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      votes INT DEFAULT 0
+    )
+  `;
+
+  try {
+    await pool.query(query);
+    console.log('Таблица candidates успешно создана или уже существует');
+  } catch (error) {
+    console.error('Ошибка при создании таблицы candidates:', error);
+  }
+}
+
+// Функция для создания таблицы votes, если она не существует
+async function createVotesTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS votes (
+      voter_chat_id BIGINT PRIMARY KEY,
+      candidate_chat_id BIGINT NOT NULL,
+      FOREIGN KEY (candidate_chat_id) REFERENCES candidates (chat_id)
+    )
+  `;
+
+  try {
+    await pool.query(query);
+    console.log('Таблица votes успешно создана или уже существует');
+  } catch (error) {
+    console.error('Ошибка при создании таблицы votes:', error);
+  }
+}
+
 
 // Функция для установки языка пользователя
 module.exports.setLang = async (chatId, lang) => {
@@ -55,22 +114,23 @@ module.exports.createOrUpdateUser = async (chatId, lang) => {
 
 
 
-
 // Функция для получения языка пользователя
 module.exports.getLang = async (chatId) => {
   const query = {
-    text: 'SELECT lang FROM users WHERE chat_id = $1',
+    text: 'SELECT lang, is_new_user FROM users WHERE chat_id = $1',
     values: [chatId],
   };
   try {
     const result = await pool.query(query);
-    return result.rows[0].lang;
+    return {
+      lang: result.rows[0].lang,
+      isNewUser: result.rows[0].is_new_user
+    };
   } catch (error) {
     console.error('Error getting language:', error);
     return null;
   }
 }
-
 
 // Функция для получения списка кандидатов
 module.exports.getCandidates = async () => {
