@@ -22,7 +22,7 @@ sudo -u postgres psql -c "CREATE USER $NEW_PG_USER WITH PASSWORD '$NEW_PG_PASSWO
 sudo -u postgres createdb dermocracy
 
 # Клонирование репозитория
-git clone https://github.com/username/dermocracy.git
+git clone https://github.com/Dermocracy/dermocracy.git
 
 # Установка зависимостей проекта
 cd dermocracy
