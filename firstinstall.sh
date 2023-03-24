@@ -15,6 +15,7 @@ sudo apt-get install -y postgresql postgresql-contrib
 
 # Настройка PostgreSQL
 sudo -u postgres createuser --interactive
+sudo -u postgres dropdb --if-exists dermocracy
 sudo -u postgres createdb dermocracy
 
 # Клонирование вашего репозитория
@@ -24,8 +25,8 @@ cd dermocracy
 # Установка зависимостей проекта
 npm install
 
-# Установка knex.js для работы с базой данных
-npm install knex pg
+# Установка дополнительных модулей
+npm install node-telegram-bot-api knex pg
 
 # Инициализация knex.js
 npx knex init
