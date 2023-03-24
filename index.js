@@ -81,20 +81,25 @@ async function startElection(chatId, userLang) {
 }
 
 async function showCandidateList(chatId, userLang) {
-  const candidates = await db.getCandidates();
-  const selectedLang = await getLang(chatId);
-  let candidateListMessage = userLang.candidate_list;
+  try {
+    const candidates = await db.getCandidates();
+    let candidateListMessage = userLang.candidate_list;
 
-  if (candidates.length > 0) {
-    candidates.forEach((candidate, index) => {
-      candidateListMessage += `\n${index + 1}. ${candidate.name} (ID: ${candidate.chat_id})`;
-    });
-  } else {
-    candidateListMessage = userLang.no_candidates;
+    if (candidates.length > 0) {
+      candidates.forEach((candidate, index) => {
+        candidateListMessage += `\n${index + 1}. ${candidate.name} (ID: ${candidate.chat_id})`;
+      });
+    } else {
+      candidateListMessage = userLang.no_candidates;
+    }
+
+    bot.sendMessage(chatId, candidateListMessage);
+  } catch (error) {
+    console.error(error);
+    bot.sendMessage(chatId, userLang.error_occurred);
   }
-
-  bot.sendMessage(chatId, candidateListMessage);
 }
+
 
 async function voteForCandidate(chatId, candidateId) {
   const userLang = await getLang(chatId);
@@ -126,7 +131,7 @@ bot.on("message", async (msg) => {
     }
   } catch (error) {
     console.error(error);
-    bot.sendMessage(chatId, lang.default.error_occurred);
+    bot.sendMessage(chatId, lang.en.error_occurred);
   }
 });
 
