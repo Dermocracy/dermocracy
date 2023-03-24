@@ -43,7 +43,6 @@ async function setLang(chatId, lang) {
 // добавьте это в конец db.js
 module.exports = {
   pool,
-  getUsers,
   getUserByChatId,
   createUser,
   updateUser,
