@@ -54,6 +54,13 @@ bot.on("callback_query", async (callbackQuery) => {
     });
   }
 });
+async function createOrUpdateUser(chatId, lang) {
+  try {
+    await db.setLang(chatId, lang);
+  } catch (error) {
+    console.error("Error creating or updating user:", error);
+  }
+}
 
 bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
