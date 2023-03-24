@@ -9,7 +9,6 @@ const pool = new Pool({
 
 module.exports.query = (text, params) => pool.query(text, params);
 
-// добавьте это в db.js
 module.exports.setLang = async (chatId, lang) => {
   const query = {
     text: 'UPDATE users SET lang = $1 WHERE chat_id = $2',
@@ -35,6 +34,7 @@ module.exports.getLang = async (chatId) => {
     return null;
   }
 }
+
 module.exports.createOrUpdateUser = async (chatId, lang) => {
   const query = {
     text: 'INSERT INTO users (chat_id, lang) VALUES ($1, $2) ON CONFLICT (chat_id) DO UPDATE SET lang = $2',
@@ -43,4 +43,6 @@ module.exports.createOrUpdateUser = async (chatId, lang) => {
   try {
     await pool.query(query);
   } catch (error) {
-    console.error('Error creating or updating user:',
+    console.error('Error creating or updating user:', error);
+  }
+}
