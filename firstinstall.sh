@@ -30,11 +30,19 @@ npm install knex pg
 # Инициализация knex.js
 npx knex init
 
+# Запрос токена Telegram и учетных данных базы данных
+echo "Введите токен Telegram бота:"
+read telegram_bot_token
+echo "Введите имя пользователя базы данных:"
+read db_user
+echo "Введите пароль пользователя базы данных:"
+read db_password
+
 # Добавление файла .env с токеном вашего бота и настройками базы данных
-echo "TELEGRAM_BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN" > .env
+echo "TELEGRAM_BOT_TOKEN=$telegram_bot_token" > .env
 echo "DB_HOST=localhost" >> .env
-echo "DB_USER=your_db_user" >> .env
-echo "DB_PASSWORD=your_db_password" >> .env
+echo "DB_USER=$db_user" >> .env
+echo "DB_PASSWORD=$db_password" >> .env
 echo "DB_NAME=dermocracy" >> .env
 
 echo "Установка завершена. Вы можете запустить вашего бота командой 'node index.js' в папке 'dermocracy'."
