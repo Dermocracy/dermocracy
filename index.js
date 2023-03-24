@@ -76,5 +76,14 @@ bot.onText(/\/start_election/, async (msg) => {
   const lang = await getLang(chatId);
   bot.sendMessage(chatId, lang.start_election);
 });
+async function getLang(chatId) {
+  try {
+    const result = await db.query('SELECT lang FROM users WHERE chat_id = $1', [chatId]);
+    return result.rows[0].lang;
+  } catch (error) {
+    console.error('Error getting language:', error);
+    return null;
+  }
+}
 
 console.log("Dermocracy Bot запущен и ожидает сообщений...");
