@@ -22,6 +22,39 @@ module.exports.setLang = async (chatId, lang) => {
     console.error('Error setting language:', error);
   }
 }
+// Функция для создания пользователя
+module.exports.createUser = async (chatId) => {
+  const lang = 'en'; // Значение языка по умолчанию
+  const query = {
+    text: 'INSERT INTO users (chat_id, lang) VALUES ($1, $2)',
+    values: [chatId, lang],
+  };
+  try {
+    await pool.query(query);
+  } catch (error) {
+    console.error('Error creating user:', error);
+  }
+};
+// Функция для создания или обновления пользователя
+module.exports.createOrUpdateUser = async (chatId, lang) => {
+  const query = {
+    text: 'SELECT * FROM users WHERE chat_id = $1',
+    values: [chatId],
+  };
+  try {
+    const result = await pool.query(query);
+    if (result.rows.length === 0) {
+      await module.exports.createUser(chatId, lang);
+    } else {
+      await module.exports.updateUser(chatId, lang);
+    }
+  } catch (error) {
+    console.error('Error creating or updating user:', error);
+  }
+};
+
+
+
 
 // Функция для получения языка пользователя
 module.exports.getLang = async (chatId) => {
@@ -38,37 +71,6 @@ module.exports.getLang = async (chatId) => {
   }
 }
 
-// Функция для создания или обновления пользователя
-module.exports.createOrUpdateUser = async (chatId, lang) => {
-  console.log('createOrUpdateUser called with chatId:', chatId, 'lang:', lang);
-  const query = {
-    text: 'SELECT * FROM users WHERE chat_id = $1',
-    values: [chatId],
-  };
-  try {
-    const result = await pool.query(query);
-    if (result.rows.length === 0) {
-      await createUser(chatId, lang);
-    } else {
-      await updateUser(chatId, lang);
-    }
-  } catch (error) {
-    console.error('Error creating or updating user:', error);
-  }
-};
-
-// Функция для обновления пользователя
-module.exports.updateUser = async (chatId, lang) => {
-  const query = {
-    text: 'UPDATE users SET lang = $1 WHERE chat_id = $2',
-    values: [lang, chatId],
-  };
-  try {
-    await pool.query(query);
-  } catch (error) {
-    console.error('Error updating user:', error);
-  }
-};
 
 // Функция для получения списка кандидатов
 module.exports.getCandidates = async () => {
@@ -132,49 +134,6 @@ module.exports.startElection = async () => {
     await pool.query(query);
   } catch (error) {
     console.error("Error starting election:", error);
-  }
-};
-// Функция для создания пользователя
-module.exports.createUser = async (chatId, lang) => {
-  const query = {
-    text: 'INSERT INTO users (chat_id, lang) VALUES ($1, $2)',
-    values: [chatId, lang],
-  };
-  try {
-    await pool.query(query);
-  } catch (error) {
-    console.error('Error creating user:', error);
-  }
-};
-
-// Функция для обновления пользователя
-module.exports.updateUser = async (chatId, lang) => {
-  const query = {
-    text: 'UPDATE users SET lang = $1 WHERE chat_id = $2',
-    values: [lang, chatId],
-  };
-  try {
-    await pool.query(query);
-  } catch (error) {
-    console.error('Error updating user:', error);
-  }
-};
-
-// Функция для создания или обновления пользователя
-module.exports.createOrUpdateUser = async (chatId, lang) => {
-  const query = {
-    text: 'SELECT * FROM users WHERE chat_id = $1',
-    values: [chatId],
-  };
-  try {
-    const result = await pool.query(query);
-    if (result.rows.length === 0) {
-      await createUser(chatId, lang);
-    } else {
-      await updateUser(chatId, lang);
-    }
-  } catch (error) {
-    console.error('Error creating or updating user:', error);
   }
 };
 // Функция для обновления пользователя
