@@ -119,8 +119,9 @@ bot.on('message', async (msg) => {
   if (!msg.text) {
     return;
   }
-  
+
   const chatId = msg.chat.id;
+  await createOrUpdateUser(chatId, 'ru'); // Добавьте 'ru' или другой язык по умолчанию
   const userLang = await getLang(chatId);
   
   if (userLang) {
@@ -173,19 +174,6 @@ bot.onText(/\/vote (\d+)/, async (msg, match) => {
   const candidateId = parseInt(match[1]);
 
   voteForCandidate(chatId, candidateId);
-});
-
-bot.on('message', async (msg) => {
-  if (!msg.text) {
-    return;
-  }
-  
-  const chatId = msg.chat.id;
-  const userLang = await getLang(chatId);
-  
-  if (userLang && msg.text === userLang.register_candidate) {
-    await registerCandidate(chatId, userLang);
-  }
 });
 
 bot.onText(/\/view_candidates/, async (msg) => {
