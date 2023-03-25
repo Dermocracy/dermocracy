@@ -81,6 +81,21 @@ module.exports.setLang = async (chatId, lang) => {
     console.error('Error setting language:', error);
   }
 }
+// Функция для получения языка пользователя
+module.exports.getLang = async (chatId) => {
+  const query = {
+    text: 'SELECT lang, is_new_user FROM users WHERE chat_id = $1',
+    values: [chatId],
+  };
+  try {
+    const result = await pool.query(query);
+    return result.rows[0].lang; // Измените эту строку
+  } catch (error) {
+    console.error('Error getting language:', error);
+    return null;
+  }
+}
+
 // Функция для создания пользователя
 module.exports.createUser = async (chatId) => {
   const lang = 'en'; // Значение языка по умолчанию
@@ -103,7 +118,7 @@ module.exports.createOrUpdateUser = async (chatId, lang) => {
   try {
     const result = await pool.query(query);
     if (result.rows.length === 0) {
-      await module.exports.createUser(chatId, lang);
+      await module.exports.createUser(chatId);
     } else {
       await module.exports.updateUser(chatId, lang);
     }
@@ -114,23 +129,7 @@ module.exports.createOrUpdateUser = async (chatId, lang) => {
 
 
 
-// Функция для получения языка пользователя
-module.exports.getLang = async (chatId) => {
-  const query = {
-    text: 'SELECT lang, is_new_user FROM users WHERE chat_id = $1',
-    values: [chatId],
-  };
-  try {
-    const result = await pool.query(query);
-    return {
-      lang: result.rows[0].lang,
-      isNewUser: result.rows[0].is_new_user
-    };
-  } catch (error) {
-    console.error('Error getting language:', error);
-    return null;
-  }
-}
+
 
 // Функция для получения списка кандидатов
 module.exports.getCandidates = async () => {
